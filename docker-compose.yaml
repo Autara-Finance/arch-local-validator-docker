@@ -1,0 +1,22 @@
+services:
+  autora-arch-local-validator:
+    platform: linux/amd64  # Force x86-64 emulation
+    build: .
+    container_name: autora-arch-local-validator-node
+    ports:
+      - "18443:18443"  # Bitcoin Core RPC
+      - "3030:3030"    # Titan API
+      - "9002:9002"    # Arch Validator RPC
+    volumes:
+      - autora_arch_local_validator_data:/validator_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9002/status", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  autora_arch_local_validator_data:
+    driver: local
