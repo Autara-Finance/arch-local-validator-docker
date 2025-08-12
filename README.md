@@ -25,9 +25,9 @@ The container auto-initializes regtest (creates wallet, mines 101 blocks) and ex
 docker pull --platform linux/amd64 baptisteeb/arigato-node:latest
 docker run -d \
   --platform linux/amd64 \
-  --name arch-local-node \
+  --name autara-arch-local-node \
   -p 18443:18443 -p 3030:3030 -p 9002:9002 \
-  -v arch_local_validator_data:/validator_data \
+  -v autara_arch_local_validator_data:/validator_data \
   baptisteeb/arigato-node:latest
 ```
 
@@ -37,16 +37,24 @@ docker compose build
 docker compose up -d
 ```
 
-### Verify services
+### Component versions and build date
+- Bitcoin Core: pinned to v28.0 (see `Dockerfile`)
+- Titan: built from `saturnbtc/Titan` at image build time (HEAD) - rune-indexer 0.1.0
+- Arch Local Validator: latest release at image build time (HEAD) - local_validator 0.5.5
+
+Get exact versions from a running container inside the docker:
 ```bash
-# Arch Validator
-curl -s http://localhost:9002/status | jq .
+# Bitcoin Core
+bitcoind -version
 
-# Titan indexer
-curl -s http://localhost:3030/status | jq .
+# Titan (tries --version, falls back to first help line)
+/validator_data/titan --version
 
-# Bitcoin Core (from inside the container)
-docker exec -it arch-local-validator-node bitcoin-cli -regtest getblockchaininfo | jq .
+# Arch Local Validator
+/validator_data/arch_local_validator/local_validator --version
+
+# Image build timestamp (UTC)
+docker inspect -f '{{.Created}}' arch-local-validator-node | sed 's/T/ /; s/\.\{0,\}Z$//'
 ```
 
 ### Stop and cleanup
